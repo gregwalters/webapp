@@ -1,0 +1,49 @@
+version: '3.4'
+
+networks:
+  traefik_net:
+    external: true
+  internal:
+    driver: overlay
+
+services:
+  redis-master:
+    image: 'bitnami/redis:latest'
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - internal
+  redis-slave:
+    image: 'bitnami/redis:latest'
+    depends_on:
+      - redis-master
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - internal
+  webapp:
+    image: 'allrightname/webapp'
+    environment:
+      - APP_URL=${APP_URL}
+    networks:
+      - internal
+      - traefik_net
+    deploy:
+      labels:
+        - "traefik.port=3000"
+        - "traefik.frontend.rule=Host:guestbook.gregw.us"
+        - "traefik.docker.network=traefik_net"
+  kube:
+    image: 'k8s.gcr.io/guestbook:v3'
+    networks:
+      - internal
+      - traefik_net
+    deploy:
+      labels:
+        - "traefik.port=3000"
+        - "traefik.frontend.rule=Host:guest.gregw.us"
+        - "traefik.docker.network=traefik_net"
