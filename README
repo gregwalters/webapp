@@ -8,6 +8,10 @@ Running:
 
 export APP_URL="http://path/to/your/tar.gz/file" && docker stack deploy -c docker-compose.yml guestbook
 
+Running a bare container:
+
+docker run -d -e APP_URL=https://path/to/your/tar.gz/file -p 3000:3000 allrightname/webapp
+
 TODO:
 
 Make this domain agnostic so other people can use it.
